@@ -34,7 +34,7 @@ func (p7 *PKCS7) Decrypt(cert *x509.Certificate, pkey crypto.PrivateKey) ([]byte
 	switch pkey := pkey.(type) {
 	case *rsa.PrivateKey:
 		var contentKey []byte
-		contentKey, err := rsa.DecryptOAEP(sha256.New(), nil, pkey, recipient.EncryptedKey, nil)
+		contentKey, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, pkey, recipient.EncryptedKey, nil)
 		if err != nil {
 			return nil, err
 		}
