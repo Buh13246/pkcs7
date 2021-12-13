@@ -8,6 +8,7 @@ import (
 	"crypto/des"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"encoding/asn1"
 	"errors"
@@ -33,7 +34,7 @@ func (p7 *PKCS7) Decrypt(cert *x509.Certificate, pkey crypto.PrivateKey) ([]byte
 	switch pkey := pkey.(type) {
 	case *rsa.PrivateKey:
 		var contentKey []byte
-		contentKey, err := rsa.DecryptPKCS1v15(rand.Reader, pkey, recipient.EncryptedKey)
+		contentKey, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, pkey, recipient.EncryptedKey, nil)
 		if err != nil {
 			return nil, err
 		}
