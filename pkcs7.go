@@ -65,6 +65,7 @@ var (
 	// Signature Algorithms
 	OIDEncryptionAlgorithmRSA       = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
 	OIDEncryptionAlgorithmRSASHA1   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 5}
+	OIDEncryptionAlgorithmRSASSAPSS = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 10}
 	OIDEncryptionAlgorithmRSASHA256 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 11}
 	OIDEncryptionAlgorithmRSASHA384 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 12}
 	OIDEncryptionAlgorithmRSASHA512 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 13}
@@ -104,11 +105,11 @@ func getDigestOIDForSignatureAlgorithm(digestAlg x509.SignatureAlgorithm) (asn1.
 	switch digestAlg {
 	case x509.SHA1WithRSA, x509.ECDSAWithSHA1:
 		return OIDDigestAlgorithmSHA1, nil
-	case x509.SHA256WithRSA, x509.ECDSAWithSHA256:
+	case x509.SHA256WithRSA, x509.ECDSAWithSHA256, x509.SHA256WithRSAPSS:
 		return OIDDigestAlgorithmSHA256, nil
-	case x509.SHA384WithRSA, x509.ECDSAWithSHA384:
+	case x509.SHA384WithRSA, x509.ECDSAWithSHA384, x509.SHA384WithRSAPSS:
 		return OIDDigestAlgorithmSHA384, nil
-	case x509.SHA512WithRSA, x509.ECDSAWithSHA512:
+	case x509.SHA512WithRSA, x509.ECDSAWithSHA512, x509.SHA512WithRSAPSS:
 		return OIDDigestAlgorithmSHA512, nil
 	}
 	return nil, fmt.Errorf("pkcs7: cannot convert hash to oid, unknown hash algorithm")
