@@ -13,6 +13,7 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
+	"log"
 )
 
 // ErrUnsupportedAlgorithm tells you when our quick dev assumptions have failed
@@ -36,8 +37,10 @@ func (p7 *PKCS7) Decrypt(cert *x509.Certificate, pkey crypto.PrivateKey) ([]byte
 		var contentKey []byte
 		contentKey, err := rsa.DecryptOAEP(sha256.New(), rand.Reader, pkey, recipient.EncryptedKey, nil)
 		if err != nil {
+			log.Fatal("Error on decrypting oaep key")
 			return nil, err
 		}
+		log.Print(contentKey)
 		return data.EncryptedContentInfo.decrypt(contentKey)
 	}
 	return nil, ErrUnsupportedAlgorithm

@@ -7,11 +7,14 @@ import (
 	"crypto/des"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 )
 
 type envelopedData struct {
@@ -233,9 +236,11 @@ func encryptAESCBC(content []byte, key []byte) ([]byte, *encryptedContentInfo, e
 		return nil, nil, err
 	}
 	cyphertext := make([]byte, len(plaintext))
+
 	mode.CryptBlocks(cyphertext, plaintext)
 
 	// Prepare ASN.1 Encrypted Content Info
+	// this is correct
 	eci := encryptedContentInfo{
 		ContentType: OIDData,
 		ContentEncryptionAlgorithm: pkix.AlgorithmIdentifier{
@@ -296,11 +301,25 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 		if err != nil {
 			return nil, err
 		}
+		/*params := rsaESOAEPAlgorithmParameters{
+			HashFunc:    sha256Identifier,
+			MaskgenFunc: mgf1SHA256Identifier,
+			PSourceFunc: pSpecifiedEmptyIdentifier,
+		}*/
+		data, err := ioutil.ReadFile("./headerBytes")
+		if err != nil {
+			return nil, err
+		}
 		info := recipientInfo{
 			Version:               0,
 			IssuerAndSerialNumber: ias,
 			KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
-				Algorithm: OIDEncryptionAlgorithmRSA,
+				// FIXME: OIDEncryptionAlgorithm
+				Algorithm: OIDEncryptionAlgorithmRSAESOAEP,
+				Parameters: asn1.RawValue{
+					Tag:       asn1.TagSequence,
+					FullBytes: data,
+				},
 			},
 			EncryptedKey: encrypted,
 		}
@@ -381,7 +400,9 @@ func marshalEncryptedContent(content []byte) asn1.RawValue {
 
 func encryptKey(key []byte, recipient *x509.Certificate) ([]byte, error) {
 	if pub := recipient.PublicKey.(*rsa.PublicKey); pub != nil {
-		return rsa.EncryptPKCS1v15(rand.Reader, pub, key)
+		//return rsa.EncryptPKCS1v15(rand.Reader, pub, key)
+		log.Print(key)
+		return rsa.EncryptOAEP(sha256.New(), rand.Reader, pub, key, nil)
 	}
 	return nil, ErrUnsupportedAlgorithm
 }

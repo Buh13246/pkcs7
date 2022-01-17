@@ -31,6 +31,41 @@ type contentInfo struct {
 	Content     asn1.RawValue `asn1:"explicit,optional,tag:0"`
 }
 
+type rsaESOAEPAlgorithmParameters struct {
+	HashFunc    pkix.AlgorithmIdentifier `asn1:"optional,explicit,tag:0,default:sha256Identifier"`
+	MaskgenFunc pkix.AlgorithmIdentifier `asn1:"optional,explicit,tag:1,default:mgf1SHA256Identifier"`
+	PSourceFunc pkix.AlgorithmIdentifier `asn1:"optional,explicit,tag:2,default:pSpecifiedEmptyIdentifier"`
+}
+
+var (
+	sha256Identifier = pkix.AlgorithmIdentifier{
+		Algorithm:  OIDDigestAlgorithmSHA256,
+		Parameters: asn1.NullRawValue,
+	}
+	mgf1SHA256Identifier = pkix.AlgorithmIdentifier{
+		Algorithm: OIDDigestAlgorithmMGF1,
+		// RFC 4055, 2.1 sha1Identifier
+		// FIXME: use sha256 instead of sha1
+		Parameters: asn1.RawValue{
+			Class:      asn1.ClassUniversal,
+			Tag:        asn1.TagSequence,
+			IsCompound: false,
+			Bytes:      []byte{6, 5, 43, 14, 3, 2, 26, 5, 0},
+			FullBytes:  []byte{16, 9, 6, 5, 43, 14, 3, 2, 26, 5, 0},
+		},
+	}
+	pSpecifiedEmptyIdentifier = pkix.AlgorithmIdentifier{
+		Algorithm: OIDPSpecified,
+		// RFC 4055, 4.1 nullOctetString
+		Parameters: asn1.RawValue{
+			Class:      asn1.ClassUniversal,
+			Tag:        asn1.TagOctetString,
+			IsCompound: false,
+			Bytes:      []byte{},
+			FullBytes:  []byte{4, 0}},
+	}
+)
+
 // ErrUnsupportedContentType is returned when a PKCS7 content is not supported.
 // Currently only Data (1.2.840.113549.1.7.1), Signed Data (1.2.840.113549.1.7.2),
 // and Enveloped Data are supported (1.2.840.113549.1.7.3)
@@ -65,6 +100,9 @@ var (
 	// Signature Algorithms
 	OIDEncryptionAlgorithmRSA       = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 1}
 	OIDEncryptionAlgorithmRSASHA1   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 5}
+	OIDEncryptionAlgorithmRSAESOAEP = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 7}
+	OIDDigestAlgorithmMGF1          = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 8}
+	OIDPSpecified                   = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 9}
 	OIDEncryptionAlgorithmRSASSAPSS = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 10}
 	OIDEncryptionAlgorithmRSASHA256 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 11}
 	OIDEncryptionAlgorithmRSASHA384 = asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 1, 12}
