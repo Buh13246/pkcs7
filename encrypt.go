@@ -13,7 +13,6 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 )
 
@@ -306,10 +305,11 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 			MaskgenFunc: mgf1SHA256Identifier,
 			PSourceFunc: pSpecifiedEmptyIdentifier,
 		}*/
-		data, err := ioutil.ReadFile("./headerBytes")
-		if err != nil {
-			return nil, err
-		}
+
+		// This is the header in asn1 DER data which is described by params.
+		// Sadly the conversion from struct to DER data does not work,
+		// thats why we use the binary header directly
+		data_header := []byte{0x30, 0x2B, 0xA0, 0x0D, 0x30, 0x0B, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, 0xA1, 0x1A, 0x30, 0x18, 0x06, 0x09, 0x2A, 0x86, 0x48, 0x86, 0xF7, 0x0D, 0x01, 0x01, 0x08, 0x30, 0x0B, 0x06, 0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01}
 		info := recipientInfo{
 			Version:               0,
 			IssuerAndSerialNumber: ias,
@@ -318,7 +318,7 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 				Algorithm: OIDEncryptionAlgorithmRSAESOAEP,
 				Parameters: asn1.RawValue{
 					Tag:       asn1.TagSequence,
-					FullBytes: data,
+					FullBytes: data_header,
 				},
 			},
 			EncryptedKey: encrypted,
