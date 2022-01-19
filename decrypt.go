@@ -40,7 +40,6 @@ func (p7 *PKCS7) Decrypt(cert *x509.Certificate, pkey crypto.PrivateKey) ([]byte
 			log.Fatal("Error on decrypting oaep key")
 			return nil, err
 		}
-		log.Print(contentKey)
 		return data.EncryptedContentInfo.decrypt(contentKey)
 	}
 	return nil, ErrUnsupportedAlgorithm

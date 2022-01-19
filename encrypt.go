@@ -13,7 +13,6 @@ import (
 	"encoding/asn1"
 	"errors"
 	"fmt"
-	"log"
 )
 
 type envelopedData struct {
@@ -314,7 +313,6 @@ func Encrypt(content []byte, recipients []*x509.Certificate) ([]byte, error) {
 			Version:               0,
 			IssuerAndSerialNumber: ias,
 			KeyEncryptionAlgorithm: pkix.AlgorithmIdentifier{
-				// FIXME: OIDEncryptionAlgorithm
 				Algorithm: OIDEncryptionAlgorithmRSAESOAEP,
 				Parameters: asn1.RawValue{
 					Tag:       asn1.TagSequence,
@@ -401,7 +399,6 @@ func marshalEncryptedContent(content []byte) asn1.RawValue {
 func encryptKey(key []byte, recipient *x509.Certificate) ([]byte, error) {
 	if pub := recipient.PublicKey.(*rsa.PublicKey); pub != nil {
 		//return rsa.EncryptPKCS1v15(rand.Reader, pub, key)
-		log.Print(key)
 		return rsa.EncryptOAEP(sha256.New(), rand.Reader, pub, key, nil)
 	}
 	return nil, ErrUnsupportedAlgorithm
